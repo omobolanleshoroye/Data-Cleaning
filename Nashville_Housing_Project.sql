@@ -5,7 +5,7 @@ select *
 from housing_project
 
 -- Cleaning begins 
--- "" used because of uppercase letters in column name
+-- "" used because of uppercase letters in dataset column names
 -- Clean up date format 
 
 SELECT "SaleDate" as Date, CAST ("SaleDate" as date)  
@@ -32,7 +32,7 @@ from housing_project
 order by "ParcelID"
 -- Parcel Ids with the same code have the same property addresses
 
--- Self Join the same table where parcel ID is the same but its not the same row
+-- Self Join 
 
 select *
 from housing_project a
@@ -47,9 +47,9 @@ join housing_project b
 on a."ParcelID" = b."ParcelID"
 and a."UniqueID " <> b."UniqueID "
 where a."PropertyAddress" is null
--- This shows the null property addresses in one column and the populated one in another property adress column. It gives he addresses we need to populate the null columns.
+-- This shows the null property addresses in one column and the populated ones in another property adress column. It gives the addresses we need to populate the null columns.
 
--- 
+
 select a."ParcelID", a."PropertyAddress", b."ParcelID", b."PropertyAddress", COALESCE (a."PropertyAddress", b."PropertyAddress")
 from housing_project a
 join housing_project b
@@ -67,7 +67,7 @@ on a."ParcelID" = b."ParcelID"
 and a."UniqueID " <> b."UniqueID "
 where a."PropertyAddress" is null
 
--- Run above queries to clarify that there are no null values
+-- Run previous queries to clarify that there are no null values
 
 -- Breaking out the adresses into individual columns (Address, City, State)
 -- Property address first
@@ -127,7 +127,7 @@ Update housing_project
 SET "Ownerstate" =  
 Split_part("OwnerAddress",',',3)
 
--- SoldAsVacant column. Change N to No and Y to Yes (Use case statement)
+-- SoldAsVacant column. Change N to No and Y to Yes using case statement
 
 select distinct "SoldAsVacant"
 from housing_project
@@ -201,7 +201,6 @@ where row_num > 1
 
 
 -- Delete unused columns 
--- Don't do this to raw data, mostly used on views created.
 
 alter table housing_project
 drop column "OwnerAddress"
