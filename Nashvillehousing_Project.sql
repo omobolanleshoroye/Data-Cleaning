@@ -19,7 +19,7 @@ SET "SaleDate" = CAST ("SaleDate" as date)
 select "PropertyAddress"
 from housing_project
 Where "PropertyAddress" is null
-- 29 null rows 
+-- 29 null rows 
 
 select *
 from housing_project
