@@ -1,79 +1,79 @@
 -- Import dataset into SQL database
 -- View dataset
 
-select *
-from housing_project
+SELECT *
+FROM housing_project
 
 -- Cleaning begins 
 -- "" used because of uppercase letters in dataset column names
 -- Clean up date format 
 
-SELECT "SaleDate" as Date, CAST ("SaleDate" as date)  
+SELECT "SaleDate" AS Date, CAST ("SaleDate" AS date)  
 FROM housing_project
 
-Update housing_project
-SET "SaleDate" = CAST ("SaleDate" as date)
+UPDATE housing_project
+SET "SaleDate" = CAST ("SaleDate" AS date)
 
 -- Populate property address
 
-select "PropertyAddress"
-from housing_project
-Where "PropertyAddress" is null
+SELECT "PropertyAddress"
+FROM housing_project
+WHERE "PropertyAddress" IS NULL
 -- 29 null rows 
 
-select *
-from housing_project
-Where "PropertyAddress" is null
+SELECT *
+FROM housing_project
+WHERE "PropertyAddress" IS NULL
 -- Property address is highly likely not to change but other columns can. 
 
-select "ParcelID", "PropertyAddress"
-from housing_project
---Where "PropertyAddress" is null
-order by "ParcelID"
+SELECT "ParcelID", "PropertyAddress"
+FROM housing_project
+--WHERE "PropertyAddress" IS NULL
+ORDER BY "ParcelID"
 -- Parcel Ids with the same code have the same property addresses
 
 -- Self Join 
 
-select *
-from housing_project a
-join housing_project b
-on a."ParcelID" = b."ParcelID"
-and a."UniqueID " <> b."UniqueID "
+SELECT *
+FROM housing_project AS a
+JOIN housing_project AS b
+ON a."ParcelID" = b."ParcelID"
+AND a."UniqueID " <> b."UniqueID "
 
 
-select a."ParcelID", a."PropertyAddress", b."ParcelID", b."PropertyAddress"
-from housing_project a
-join housing_project b
-on a."ParcelID" = b."ParcelID"
-and a."UniqueID " <> b."UniqueID "
-where a."PropertyAddress" is null
+SELECT a."ParcelID", a."PropertyAddress", b."ParcelID", b."PropertyAddress"
+FROM housing_project AS a
+JOIN housing_project AS b
+ON a."ParcelID" = b."ParcelID"
+AND a."UniqueID " <> b."UniqueID "
+WHERE a."PropertyAddress" IS NULL
 -- This shows the null property addresses in one column and the populated ones in another property adress column. It gives the addresses we need to populate the null columns.
 
 
-select a."ParcelID", a."PropertyAddress", b."ParcelID", b."PropertyAddress", COALESCE (a."PropertyAddress", b."PropertyAddress")
-from housing_project a
-join housing_project b
-on a."ParcelID" = b."ParcelID"
-and a."UniqueID " <> b."UniqueID "
-where a."PropertyAddress" is null
+SELECT a."ParcelID", a."PropertyAddress", b."ParcelID", b."PropertyAddress", COALESCE (a."PropertyAddress", b."PropertyAddress")
+FROM housing_project AS a
+JOIN housing_project AS b
+ON a."ParcelID" = b."ParcelID"
+AND a."UniqueID " <> b."UniqueID "
+WHERE a."PropertyAddress" IS NULL
 
 -- Update table with populated data
 
-update housing_project 
-set "PropertyAddress" =  COALESCE (a."PropertyAddress", b."PropertyAddress")
-from housing_project a
-join housing_project b
-on a."ParcelID" = b."ParcelID"
-and a."UniqueID " <> b."UniqueID "
-where a."PropertyAddress" is null
+UPDATE housing_project 
+SET "PropertyAddress" =  COALESCE (a."PropertyAddress", b."PropertyAddress")
+FROM housing_project AS a
+JOIN housing_project AS b
+ON a."ParcelID" = b."ParcelID"
+AND a."UniqueID " <> b."UniqueID "
+WHERE a."PropertyAddress" IS NULL
 
 -- Run previous queries to clarify that there are no null values
 
 -- Breaking out the adresses into individual columns (Address, City, State)
 -- Property address first
 
-select "PropertyAddress"
-from housing_project
+SELECT "PropertyAddress"
+FROM housing_project
 
 SELECT 
 SUBSTRING("PropertyAddress", 1, STRPOS("PropertyAddress", ',')-1) AS Address,
@@ -82,125 +82,125 @@ FROM housing_project
 
 -- Update table with new columns
 
-Alter table housing_project
+ALTER TABLE housing_project
 Add "PropertysplitAddress" varchar (300)
 
-Alter table housing_project
+ALTER TABLE housing_project
 Add "Propertycity" varchar (300)
 
-Update housing_project
+UPDATE housing_project
 SET "PropertysplitAddress" =  
 SUBSTRING("PropertyAddress", 1, STRPOS("PropertyAddress", ',')-1) 
 
-Update housing_project
+UPDATE housing_project
 SET "Propertycity" =  
 SUBSTRING("PropertyAddress", STRPOS("PropertyAddress", ',')+1, LENGTH("PropertyAddress")) 
 
 -- Owner address
 
-select "OwnerAddress"
-from housing_project
+SELECT "OwnerAddress"
+FROM housing_project
 
 SELECT Split_part("OwnerAddress",',',1),
 Split_part("OwnerAddress",',',2),
 Split_part("OwnerAddress",',',3)
-from housing_project
+FROM housing_project
 
-Alter table housing_project
+ALTER TABLE housing_project
 Add "OwnersplitAddress" varchar (300)
 
-Update housing_project
+UPDATE housing_project
 SET "OwnersplitAddress" =  
 Split_part("OwnerAddress",',',1)
 
-Alter table housing_project
+ALTER TABLE housing_project
 Add "Ownercity" varchar (300)
 
-Update housing_project
+UPDATE housing_project
 SET "Ownercity" =  
 Split_part("OwnerAddress",',',2)
 
-Alter table housing_project
+ALTER TABLE housing_project
 Add "Ownerstate" varchar (300)
 
-Update housing_project
+UPDATE housing_project
 SET "Ownerstate" =  
 Split_part("OwnerAddress",',',3)
 
 -- SoldAsVacant column. Change N to No and Y to Yes using case statement
 
-select distinct "SoldAsVacant"
-from housing_project
-
-select distinct "SoldAsVacant", count("SoldAsVacant")
-from housing_project
-group by "SoldAsVacant"
-order by 2
-
-select "SoldAsVacant",
-case when "SoldAsVacant" = 'Y' then 'Yes'
-    when "SoldAsVacant" = 'N' then 'No'
-    else "SoldAsVacant"
-    end
+SELECT DISTINCT "SoldAsVacant"
 FROM housing_project
 
-Update housing_project
-Set "SoldAsVacant" =
-case when "SoldAsVacant" = 'Y' then 'Yes'
-    when "SoldAsVacant" = 'N' then 'No'
-    else "SoldAsVacant"
-    end
+SELECT DISTINCT "SoldAsVacant", COUNT ("SoldAsVacant")
+FROM housing_project
+GROUP BY "SoldAsVacant"
+ORDER BY 2
+
+SELECT "SoldAsVacant",
+CASE WHEN "SoldAsVacant" = 'Y' THEN 'Yes'
+    WHEN "SoldAsVacant" = 'N' THEN 'No'
+    ELSE "SoldAsVacant"
+    END
+FROM housing_project
+
+UPDATE housing_project
+SET "SoldAsVacant" =
+CASE WHEN "SoldAsVacant" = 'Y' THEN 'Yes'
+    WHEN "SoldAsVacant" = 'N' THEN 'No'
+    ELSE "SoldAsVacant"
+    END
 	
 -- Remove Duplicates
 
-select *,
-    row_number() over(
-    partition by "ParcelID",
+SELECT *,
+    ROW_NUMBER() OVER(
+    PARTITION BY "ParcelID",
     "PropertyAddress",
     "SalePrice",
     "SaleDate",
     "LegalReference"
-    Order by "UniqueID "
+    ORDER BY "UniqueID "
     ) row_num
 FROM housing_project
 
 
-WITH RowNumCTE as(
-select *,
-    row_number() over(
-    partition by "ParcelID",
+WITH RowNumCTE AS(
+SELECT *,
+    ROW_NUMBER() OVER(
+    PARTITION BY "ParcelID",
     "PropertyAddress",
     "SalePrice",
     "SaleDate",
     "LegalReference"
-    Order by "UniqueID "
-    ) row_num
-FROM housing_project
-)
-
-select *
-from RowNumCTE
-where row_num > 1
-
-with RowNumCTE as(
-select *,
-    row_number() over(
-    partition by "ParcelID",
-    "PropertyAddress",
-    "SalePrice",
-    "SaleDate",
-    "LegalReference"
-    Order by "UniqueID "
+    ORDER BY "UniqueID "
     ) row_num
 FROM housing_project
 )
 
-delete
-from RowNumCTE
-where row_num > 1
+SELECT *
+FROM RowNumCTE
+WHERE row_num > 1
+
+WITH RowNumCTE AS(
+SELECT *,
+    ROW_NUMBER() OVER(
+    PARTITION BY "ParcelID",
+    "PropertyAddress",
+    "SalePrice",
+    "SaleDate",
+    "LegalReference"
+    ORDER BY "UniqueID "
+    ) row_num
+FROM housing_project
+)
+
+DELETE
+FROM RowNumCTE
+WHERE row_num > 1
 
 
 -- Delete unused columns 
 
-alter table housing_project
-drop column "OwnerAddress"
+ALTER TABLE housing_project
+DROP COLUMN "OwnerAddress"
